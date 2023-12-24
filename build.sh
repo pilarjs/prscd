@@ -2,21 +2,16 @@
 
 set -e
 
-# prscd build script for Linux
 # Environment variable options:
-#   - PRSCD_VERSION: App version
-#   - PRSCD_PLATFORMS: Platforms to build for (e.g. "windows/amd64,linux/amd64,darwin/amd64")
+#   - PLATFORMS: Platforms to build for (e.g. "windows/amd64,linux/amd64,darwin/amd64")
+
+export CLI_VERSION=$(git describe --tags 2>/dev/null || git rev-parse --short HEAD)
 
 export LC_ALL=C
 export LC_DATE=C
 
 make_ldflags() {
-    local ldflags="-s -w -X 'main.appDate=$(date -u '+%F %T')'"
-    if [ -n "$PRSCD_VERSION" ]; then
-        ldflags="$ldflags -X 'main.appVersion=$PRSCD_VERSION'"
-    else
-        ldflags="$ldflags -X 'main.appVersion=$(git describe --tags --always --match 'v*')'"
-    fi
+    local ldflags="-s -w" #-X 'github.com/pilarjs/prscd/cli.Version=$CLI_VERSION'"
     echo "$ldflags"
 }
 
@@ -31,16 +26,17 @@ build_for_platform() {
         return 1
     fi
     echo "Building $GOOS/$GOARCH"
-    local output="build/prscd"
+    local output="prscd"
     if [[ "$GOOS" = "windows" ]]; then
         output="$output.exe"
     fi
-    # compress to .zip file
-    local binfile="build/prscd-$GOARCH-$GOOS.zip"
+    # compress to .tar.gz file
+    local binfile="build/prscd-$GOARCH-$GOOS.tar.gz"
     local exit_val=0
-    GOOS=$GOOS GOARCH=$GOARCH go build -o "$output" -ldflags "$ldflags" -trimpath || exit_val=$?
+    GOOS=$GOOS GOARCH=$GOARCH go build -o "build/$output" -ldflags "$ldflags" -trimpath ./cmd/prscd/main.go || exit_val=$?
     # compress compiled binary to .zip
-    zip -r -j "$binfile" "$output"
+    # zip -r -j "$binfile" "$output"
+    tar -C build -czvf "$binfile" "$output"
     rm -rf $output
     if [[ "$exit_val" -ne 0 ]]; then
         echo "Error: failed to build $GOOS/$GOARCH" >&2
@@ -48,11 +44,11 @@ build_for_platform() {
     fi
 }
 
-
-if [ -z "$PRSCD_PLATFORMS" ]; then
-    PRSCD_PLATFORMS="$(go env GOOS)/$(go env GOARCH)"
+if [ -z "$PLATFORMS" ]; then
+    PLATFORMS="$(go env GOOS)/$(go env GOARCH)"
 fi
-platforms=(${PRSCD_PLATFORMS//,/ })
+
+platforms=(${PLATFORMS//,/ })
 ldflags="$(make_ldflags)"
 
 mkdir -p build

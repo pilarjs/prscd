@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"yomo.run/prscd/chirp"
+	"github.com/pilarjs/prscd/chirp"
 )
 
 func init() {

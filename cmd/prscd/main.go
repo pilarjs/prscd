@@ -10,12 +10,13 @@ import (
 	"os"
 	"time"
 
-	"yomo.run/prscd/util"
-	"yomo.run/prscd/websocket"
-	"yomo.run/prscd/webtransport"
+	"github.com/pilarjs/prscd/util"
+	"github.com/pilarjs/prscd/websocket"
+	"github.com/pilarjs/prscd/webtransport"
 
 	"github.com/joho/godotenv"
 	"github.com/yomorun/yomo"
+	"github.com/yomorun/yomo/core/router"
 	"github.com/yomorun/yomo/pkg/config"
 )
 
@@ -71,9 +72,6 @@ func main() {
 	// start WebTransport listener
 	go webtransport.ListenAndServe(addr, config)
 
-	// start Probe Server for AWS health check
-	go startProbeServer(61226)
-
 	// Ctrl-C or kill <pid> graceful shutdown
 	// - `kill -SIGUSR1 <pid>` customize
 	// - `kill -SIGTERM <pid>` graceful shutdown
@@ -105,7 +103,7 @@ func startYomoZipper() {
 	log.Debug("integrated YoMo config: %v", conf)
 	log.Debug("integrated YoMo zipper: %s", fmt.Sprintf("%s:%d", conf.Host, conf.Port))
 
-	zipper, err := yomo.NewZipper(conf.Name, conf.Downstreams)
+	zipper, err := yomo.NewZipper(conf.Name, router.Default(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}

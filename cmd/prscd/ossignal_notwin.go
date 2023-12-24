@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"syscall"
 
-	"yomo.run/prscd/chirp"
+	"github.com/pilarjs/prscd/chirp"
 )
 
 func registerSignal(c chan os.Signal) {

@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/pilarjs/prscd/util"
 	"github.com/yomorun/yomo/core/frame"
-	"yomo.run/prscd/util"
 )
 
 // NewMockConnection creates a new WebSocketConnection

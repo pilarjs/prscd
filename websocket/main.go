@@ -16,8 +16,8 @@ import (
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 
-	"yomo.run/prscd/chirp"
-	"yomo.run/prscd/util"
+	"github.com/pilarjs/prscd/chirp"
+	"github.com/pilarjs/prscd/util"
 )
 
 var log = util.Log

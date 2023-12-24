@@ -9,3 +9,5 @@ out
 __presence
 package-lock.json
 .vscode
+bin/
+build/

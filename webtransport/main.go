@@ -11,8 +11,8 @@ import (
 
 	"github.com/quic-go/quic-go"
 
-	"yomo.run/prscd/chirp"
-	"yomo.run/prscd/util"
+	"github.com/pilarjs/prscd/chirp"
+	"github.com/pilarjs/prscd/util"
 )
 
 var log = util.Log
@@ -140,7 +140,7 @@ func handleConnection(sess quic.Connection) {
 	// Handle Datagram
 	go func() {
 		for {
-			msg, err := sess.ReceiveMessage(context.Background())
+			msg, err := sess.ReceiveDatagram(context.Background())
 			if err != nil {
 				// ignore errors here, we will handle client close event in stream loop
 				log.Error("-->[%s] stream.Read error: %s", pconn.RemoteAddr(), err)

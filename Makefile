@@ -38,7 +38,7 @@ test:
 
 .PHONY: bench
 bench:
-	MESH_ID=bench LOG_LEVEL=2 go test -bench=. -benchmem yomo.run/prscd/chirp
+	MESH_ID=bench LOG_LEVEL=2 go test -bench=. -benchmem github.com/pilarjs/prscd/chirp
 
 .PHONY: testpage
 testpage:
