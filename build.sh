@@ -2,17 +2,14 @@
 
 set -e
 
-# Environment variable options:
-#   - PLATFORMS: Platforms to build for (e.g. "windows/amd64,linux/amd64,darwin/amd64")
+# usage:
+# `PLATFORMS=darwin/amd64,darwin/arm64,windows/amd64,windows/arm64,linux/amd64,linux/arm64 bash build.sh`
 
 export CLI_VERSION=$(git describe --tags 2>/dev/null || git rev-parse --short HEAD)
 
 export LC_ALL=C
 export LC_DATE=C
 
-# make_ldflags() {
-#     local ldflags="-s -w" #-X 'github.com/pilarjs/prscd/cli.Version=$CLI_VERSION'"
-# }
 
 build_for_platform() {
     local platform="$1"
@@ -58,6 +55,10 @@ for platform in "${platforms[@]}"; do
     build_for_platform "$platform" "$ldflags"
 done
 
-echo "Build complete."
+echo "Build complete. Coping files..."
 
-ls -lh build/ | awk '{print $9, $5}'
+cp lo.yomo.dev.cert build/.
+cp lo.yomo.dev.key build/.
+cp .env build/.
+
+ls -lah build/ | awk '{print $9, $5}'

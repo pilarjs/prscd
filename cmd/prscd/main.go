@@ -23,14 +23,10 @@ import (
 var log = util.Log
 
 func main() {
-	// check if .env file is exists
-	_, err := os.Stat(".env")
-	if err == nil {
-		log.Debug("loading .env file...")
-		err := godotenv.Load(".env")
-		if err != nil {
-			log.Fatal(err)
-		}
+	log.Debug("loading .env file...")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// check MESH_ID env

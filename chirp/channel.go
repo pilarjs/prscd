@@ -5,9 +5,9 @@ import (
 	"os"
 	"sync"
 
+	"github.com/pilarjs/prscd/psig"
 	"github.com/pilarjs/prscd/util"
 	"github.com/vmihailenco/msgpack/v5"
-	"github.com/yomorun/psig"
 )
 
 // Channel describes a message channel.
