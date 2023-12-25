@@ -5,8 +5,8 @@ import (
 	"io"
 	"sync"
 
+	"github.com/pilarjs/prscd/psig"
 	"github.com/vmihailenco/msgpack/v5"
-	"github.com/yomorun/psig"
 )
 
 // Peer describes user on this node.

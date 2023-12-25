@@ -3,7 +3,7 @@ package chirp
 import (
 	"os"
 
-	"github.com/yomorun/psig"
+	"github.com/pilarjs/prscd/psig"
 )
 
 // NewSigPeerOnline create OpPeerOnline message.

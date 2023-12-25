@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pilarjs/prscd/psig"
 	"github.com/pilarjs/prscd/util"
 	"github.com/vmihailenco/msgpack/v5"
-	"github.com/yomorun/psig"
 	"github.com/yomorun/yomo"
 	"github.com/yomorun/yomo/pkg/trace"
 	"github.com/yomorun/yomo/serverless"
