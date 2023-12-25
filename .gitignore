@@ -7,3 +7,5 @@ __presence
 .vscode
 bin/
 build/
+
+*.pid
