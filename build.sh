@@ -10,10 +10,9 @@ export CLI_VERSION=$(git describe --tags 2>/dev/null || git rev-parse --short HE
 export LC_ALL=C
 export LC_DATE=C
 
-make_ldflags() {
-    local ldflags="-s -w" #-X 'github.com/pilarjs/prscd/cli.Version=$CLI_VERSION'"
-    echo "$ldflags"
-}
+# make_ldflags() {
+#     local ldflags="-s -w" #-X 'github.com/pilarjs/prscd/cli.Version=$CLI_VERSION'"
+# }
 
 build_for_platform() {
     local platform="$1"
@@ -33,15 +32,14 @@ build_for_platform() {
     # compress to .tar.gz file
     local binfile="build/prscd-$GOARCH-$GOOS.tar.gz"
     local exit_val=0
-    GOOS=$GOOS GOARCH=$GOARCH go build -o "build/$output" -ldflags "$ldflags" -trimpath ./cmd/prscd/main.go || exit_val=$?
-    # compress compiled binary to .zip
-    # zip -r -j "$binfile" "$output"
-    tar -C build -czvf "$binfile" "$output"
-    rm -rf $output
+    GOOS=$GOOS GOARCH=$GOARCH go build -o "build/$output" -ldflags "$ldflags" -gcflags=-l -trimpath ./cmd/prscd || exit_val=$?
     if [[ "$exit_val" -ne 0 ]]; then
         echo "Error: failed to build $GOOS/$GOARCH" >&2
         return $exit_val
     fi
+    # compress compiled binary
+    tar -C build -czvf "$binfile" "$output"
+    rm -rf "build/$output"
 }
 
 if [ -z "$PLATFORMS" ]; then
@@ -49,7 +47,7 @@ if [ -z "$PLATFORMS" ]; then
 fi
 
 platforms=(${PLATFORMS//,/ })
-ldflags="$(make_ldflags)"
+ldflags="-s -w" #-X 'github.com/pilarjs/prscd/cli.Version=$CLI_VERSION'"
 
 mkdir -p build
 rm -rf build/*

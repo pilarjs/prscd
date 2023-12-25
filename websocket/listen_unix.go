@@ -4,9 +4,10 @@
 package websocket
 
 import (
-	"golang.org/x/sys/unix"
 	"net"
 	"syscall"
+
+	"golang.org/x/sys/unix"
 )
 
 var lc = net.ListenConfig{
