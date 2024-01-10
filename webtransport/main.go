@@ -31,8 +31,9 @@ func ListenAndServe(addr string, tlsConfig *tls.Config) {
 		log.Fatal(err)
 		return
 	}
-	log.Info("Prscd - WebTransport Server - Listening on %s", ln.Addr())
-	log.Debug("tls: %+v", tlsConfig.NextProtos)
+	log.Info("prscd start WebTransport Server", "addr", ln.Addr())
+
+	log.Debug("tls.NextProtos", "value", tlsConfig.NextProtos)
 
 	// processing request
 	for {

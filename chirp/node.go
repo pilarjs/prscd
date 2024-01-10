@@ -55,7 +55,7 @@ type node struct {
 
 // AddPeer add peer to channel named `cid` on this node.
 func (n *node) AddPeer(conn Connection, cid string) *Peer {
-	log.Info("[%s] node.add_peer: %s", conn.RemoteAddr(), cid)
+	log.Debug("node.add_peer", "remoteAddr", conn.RemoteAddr(), "cid", cid)
 	peer := &Peer{
 		Sid:      conn.RemoteAddr(),
 		Cid:      cid,
@@ -71,7 +71,7 @@ func (n *node) AddPeer(conn Connection, cid string) *Peer {
 
 // RemovePeer remove peer on this node.
 func (n *node) RemovePeer(pid string) {
-	log.Info("[%s] node.remove_peer", pid)
+	log.Info("node.remove_peer", "pid", pid)
 	n.pdic.Delete(pid)
 }
 
@@ -83,7 +83,7 @@ func (n *node) GetOrAddChannel(name string) *Channel {
 	})
 
 	if !ok {
-		log.Info("create channel: %s", name)
+		log.Info("create channel", "name", name)
 	}
 
 	return channel.(*Channel)
@@ -93,7 +93,7 @@ func (n *node) GetOrAddChannel(name string) *Channel {
 func (n *node) FindChannel(name string) *Channel {
 	ch, ok := n.cdic.Load(name)
 	if !ok {
-		log.Debug("channel not found: %s", name)
+		log.Debug("channel not found", "channel", name)
 		return nil
 	}
 	return ch.(*Channel)
@@ -102,12 +102,12 @@ func (n *node) FindChannel(name string) *Channel {
 // ConnectToYoMo connect this node to the geo-distributed network which built by yomo.
 func (n *node) ConnectToYoMo(credential string) error {
 	// YOMO_ZIPPER env indicates the endpoint of YoMo Zipper to connect
-	log.Debug("[Realm:%s]connect to YoMo Zipper: %s", n.id, os.Getenv("YOMO_ZIPPER"))
+	log.Debug("connect to YoMo Zipper", "realm", n.id, "yomo endpoint", os.Getenv("YOMO_ZIPPER"))
 
 	// add open tracing
 	tp, shutdown, err := trace.NewTracerProvider("prscd")
 	if err == nil {
-		log.Info("[%s] 🛰 trace enabled", "prscd")
+		log.Info("🛰 tracing enabled")
 	}
 	defer shutdown(context.Background())
 
@@ -145,12 +145,12 @@ func (n *node) ConnectToYoMo(credential string) error {
 		var sig *psig.Signalling
 		err := msgpack.Unmarshal(ctx.Data(), &sig)
 		if err != nil {
-			log.Error("Read from YoMo error: %v, msg=%# x, string(msg)=%s", err, ctx.Data(), ctx.Data())
+			log.Error("Read from YoMo error", "err", err, "ctx.Data()", ctx.Data())
 		}
-		log.Debug("\033[32m[\u21CA\u21CA]\t%s\033[36m", sig)
+		log.Debug("sig", sig)
 
 		if sig.AppID != n.id {
-			log.Debug("//////////ignore message from other app: %s", sig.AppID)
+			log.Debug("ignore message from other app", "appID", sig.AppID)
 			return
 		}
 
@@ -206,13 +206,13 @@ func (n *node) BroadcastToYoMo(sig *psig.Signalling) {
 func DumpNodeState() {
 	log.Info("Dump start --------")
 	allRealms.Range(func(appID, realm interface{}) bool {
-		log.Info("Realm:%s", appID)
+		log.Info("Realm", "appID", appID)
 		realm.(*node).cdic.Range(func(k1, v1 interface{}) bool {
-			log.Info("\tChannel:%s", k1)
+			log.Info("\tChannel", "name", k1)
 			ch := v1.(*Channel)
-			log.Info("\t\tPeers count: %d", ch.getLen())
+			log.Info("\t\tPeers", "count", ch.getLen())
 			ch.pdic.Range(func(key, value interface{}) bool {
-				log.Info("\t\tPeer: sid=%s, cid=%s", key, value)
+				log.Info("\t\tPeer", "sid", key, "cid", value)
 				return true
 			})
 			return true
@@ -229,15 +229,15 @@ func DumpConnectionsState() {
 
 	allRealms.Range(func(appIDStr, realm interface{}) bool {
 		appID := appIDStr.(string)
-		log.Info("Realm:%s", appID)
+		log.Info("Realm", "appID", appID)
 		realm.(*node).cdic.Range(func(k1, v1 interface{}) bool {
-			log.Info("\tChannel:%s", k1)
+			log.Info("\tChannel", "name", k1)
 			chName := k1.(string)
 			ch := v1.(*Channel)
 			peersCount := ch.getLen()
 			// chName is like "appID|channelName", so we need to split it to get appID
 			// appID := strings.Split(chName, "|")[0]
-			log.Info("\t\t[%s] %s Peers count: %d", appID, chName, peersCount)
+			log.Info("\t\tPeers", "appID", appID, "channel", chName, "peersCount", peersCount)
 			if _, ok := counter[appID]; !ok {
 				counter[appID] = peersCount
 			} else {
@@ -250,12 +250,12 @@ func DumpConnectionsState() {
 
 	// list all counter
 	for appID, count := range counter {
-		log.Info("->[%s] connections: %d", appID, count)
+		log.Info("->connections", "appID", appID, "peersCount", count)
 	}
 	// write counter to /tmp/conns.log
 	f, err := os.OpenFile("/tmp/conns.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Error("open file: %v", err)
+		log.Error("failed to open file", "err", err)
 	}
 	defer f.Close()
 	timestamp := time.Now().Unix()

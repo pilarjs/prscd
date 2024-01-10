@@ -40,7 +40,7 @@ func ListenAndServe(addr string, config *tls.Config) {
 	ln := tls.NewListener(lp, config)
 	defer ln.Close()
 
-	log.Info("Prscd - WebSocket Server - Listening on %s", ln.Addr())
+	log.Info("prscd start WebSocket Server", "addr", ln.Addr())
 
 	// var node = chirp.Node
 
@@ -70,7 +70,7 @@ func ListenAndServe(addr string, config *tls.Config) {
 						ws.RejectionReason("url parse error"),
 					)
 				}
-				log.Info("path: %s, query: %+v", url.Path, url.Query())
+				log.Debug("ws upgrade", "path", url.Path, "query", url.Query())
 				if url.Path != chirp.Endpoint {
 					return ws.RejectConnectionError(
 						ws.RejectionStatus(404),
@@ -104,7 +104,7 @@ func ListenAndServe(addr string, config *tls.Config) {
 						ws.RejectionReason("illegal public key"),
 					)
 				}
-				log.Info("query.id: %s | appID: %s", cuid, appID)
+				log.Info("ws.upgrade", "queryId", cuid, "appID", appID)
 				return nil
 			},
 			OnHeader: func(key, value []byte) error {
@@ -115,8 +115,8 @@ func ListenAndServe(addr string, config *tls.Config) {
 			OnBeforeUpgrade: func() (ws.HandshakeHeader, error) {
 				// before upgrade to websocket, logic can be implemented here
 				return ws.HandshakeHeaderHTTP(http.Header{
-					"X-Prscd-Version": []string{"v2.0.0-alpha"},
-					"X-Prscd-MESHID":  []string{os.Getenv("MESH_ID")},
+					"X-Prscd-VER":    []string{"v2.1.1"},
+					"X-Prscd-MESHID": []string{os.Getenv("MESH_ID")},
 				}), nil
 			},
 		}
@@ -125,16 +125,16 @@ func ListenAndServe(addr string, config *tls.Config) {
 		p, err := u.Upgrade(conn)
 		if err != nil {
 			if err == io.EOF {
-				log.Inspect("[%s] connection closed by peer.", conn.RemoteAddr().String())
+				log.Inspect("connection closed by peer.", "remoteAddr", conn.RemoteAddr().String())
 			} else {
-				log.Info("[ws] new conn: %s", conn.RemoteAddr().String())
+				log.Info("[ws] new conn", "remoteAddr", conn.RemoteAddr().String())
 				// if is rejected connection error, send close frame to client
 				var rejectErr *ws.ConnectionRejectedError
 				if errors.As(err, &rejectErr) {
 					ws.WriteFrame(conn, ws.NewCloseFrame(ws.NewCloseFrameBody(ws.StatusCode(rejectErr.StatusCode()), rejectErr.Error())))
-					log.Error("[%s] u.upgrade reject error: %v, close connection.", conn.RemoteAddr().String(), err)
+					log.Error("u.upgrade reject error, close connection", "remoteAddr", conn.RemoteAddr().String(), "err", err)
 				} else {
-					log.Error("[%s] u.upgrade unknown error: %+v, close connection", conn.RemoteAddr().String(), err)
+					log.Error("u.upgrade unknown error, close connection", "remoteAddr", conn.RemoteAddr().String(), "err", err)
 				}
 			}
 
@@ -143,7 +143,7 @@ func ListenAndServe(addr string, config *tls.Config) {
 			continue
 		}
 
-		log.Info("[%s] upgrade success, start serving: %v", conn.RemoteAddr().String(), p)
+		log.Info("upgrade success, start serving", "remoteAddr", conn.RemoteAddr().String(), "handshake", p)
 
 		// now, the authorization is done, we can create realm instance by appID
 		node := chirp.GetOrCreateRealm(appID, credential)
@@ -151,7 +151,7 @@ func ListenAndServe(addr string, config *tls.Config) {
 		// create peer instance after Websocket handshake
 		pconn := chirp.NewWebSocketConnection(conn)
 		peer := node.AddPeer(pconn, cuid)
-		log.Debug("[%s-%s] Upgrade done!", peer.Sid, peer.Cid)
+		log.Debug("Upgrade done!", "sid", peer.Sid, "cid", peer.Cid)
 
 		keepaliveDone := make(chan bool)
 		go func(c net.Conn) {
@@ -163,7 +163,7 @@ func ListenAndServe(addr string, config *tls.Config) {
 			for {
 				select {
 				case <-keepaliveDone:
-					log.Debug("[%s] ticker done", peer.Sid)
+					log.Debug("ticker done", "sid", peer.Sid)
 					return
 				case <-ticker.C:
 					c.Write(generatePingFrame())
@@ -180,14 +180,14 @@ func ListenAndServe(addr string, config *tls.Config) {
 				// read data
 				header, r, err := wsutil.NextReader(conn, ws.StateServerSide)
 				if err != nil {
-					log.Error("read from ws error: %+v", err)
+					log.Error("read from ws error", "err", err)
 					switch et := err.(type) {
 					case wsutil.ClosedError:
 						// Client close the connection:
-						log.Info("[client disconnect] ClosedError: %v, %v", et.Code, et.Reason)
+						log.Info("[client disconnect] ClosedError", "code", et.Code, "reason", et.Reason)
 					default:
 						// detect connection has been closed
-						log.Info("read error: [%v] %v", et, err)
+						log.Info("read error", "code", et, "err", err)
 						// send Close frame to client
 						conn.Write(ws.MustCompileFrame(ws.NewCloseFrame(ws.NewCloseFrameBody(ws.StatusNormalClosure, "bye-default"))))
 					}
@@ -202,7 +202,7 @@ func ListenAndServe(addr string, config *tls.Config) {
 				if header.OpCode.IsControl() {
 					// Close Frame
 					if header.OpCode == ws.OpClose {
-						log.Info("[%s] >GOT CLOSE", peer.Sid)
+						log.Debug(">GOT CLOSE", "sid", peer.Sid)
 						peer.Disconnect()
 						wsutil.ControlFrameHandler(conn, ws.StateServerSide)
 						// conn.Write(ws.MustCompileFrame(ws.NewCloseFrame(ws.NewCloseFrameBody(ws.StatusNormalClosure, "bye"))))
@@ -217,7 +217,7 @@ func ListenAndServe(addr string, config *tls.Config) {
 						continue
 					}
 
-					log.Debug("[%s] >GOT Unhandled Control Frame: %+v", peer.Sid, header.OpCode)
+					log.Debug(">GOT Unhandled Control Frame", "sid", peer.Sid, "OpCode", header.OpCode)
 					wsutil.ControlFrameHandler(conn, ws.StateServerSide)
 
 					continue
@@ -226,7 +226,7 @@ func ListenAndServe(addr string, config *tls.Config) {
 				// handle Websocket Data Frames: https://www.rfc-editor.org/rfc/rfc6455#section-5.6
 				// only accept Binary mode message, will break if receive Text mode message
 				if header.OpCode == ws.OpText {
-					log.Error("Peer: %s sent text which not allowed", peer.Sid)
+					log.Error("peer sent text which not allowed", "sid", peer.Sid)
 					// https://datatracker.ietf.org/doc/html/rfc6455#section-7.4.1 1003
 					// conn.Write(ws.MustCompileFrame(ws.NewCloseFrame(ws.NewCloseFrameBody(ws.StatusUnsupportedData, "no text allowed"))))
 					conn.Close()
@@ -257,13 +257,13 @@ func handlePongFrame(sid string, r io.Reader, header ws.Header) error {
 	buf := make([]byte, header.Length)
 	_, err := io.ReadFull(r, buf)
 	if err != nil {
-		log.Error("Read PONG payload err: %+v", err)
+		log.Error("read PONG payload error", "err", err)
 		return err
 	}
 	// calculate the RTT and prints to stdout
 	appData := int64(binary.BigEndian.Uint64(buf))
 	now := time.Now().UnixMilli()
-	log.Inspect("[%s]\tPONG Payload, len=%d, data=%d, 𝚫=%dms", sid, len(buf), appData, now-appData)
+	log.Inspect("\tPONG Payload", "sid", sid, "len", len(buf), "val", appData, "𝚫", now-appData)
 	return nil
 }
 
