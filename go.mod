@@ -3,14 +3,14 @@ module github.com/pilarjs/prscd
 go 1.20
 
 require (
-	github.com/gobwas/ws v1.3.0
+	github.com/gobwas/ws v1.3.2
 	github.com/joho/godotenv v1.5.1
 	github.com/quic-go/qpack v0.4.0
 	github.com/quic-go/quic-go v0.40.1
 	github.com/stretchr/testify v1.8.4
 	github.com/vmihailenco/msgpack/v5 v5.4.1
-	github.com/yomorun/yomo v1.17.1
-	golang.org/x/sys v0.15.0
+	github.com/yomorun/yomo v1.17.2
+	golang.org/x/sys v0.16.0
 )
 
 require (
@@ -47,7 +47,7 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.16.1 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231106174013-bbf56f31fb17 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f // indirect
 	google.golang.org/grpc v1.59.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
