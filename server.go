@@ -88,7 +88,7 @@ func startYomoZipper() {
 	log.Debug("integrated YoMo config:", "config file", conf)
 	log.Debug("integrated YoMo zipper:", "zipper endpoint", fmt.Sprintf("%s:%d", conf.Host, conf.Port))
 
-	zipper, err := yomo.NewZipper(conf.Name, router.Default(), nil)
+	zipper, err := yomo.NewZipper(conf.Name, router.Default(), nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
