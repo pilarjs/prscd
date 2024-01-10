@@ -1,6 +1,6 @@
 //go:build ignore_vet
 
-package main
+package prscd
 
 import (
 	"log"
