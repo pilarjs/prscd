@@ -148,6 +148,12 @@ func ListenAndServe(addr string, config *tls.Config) {
 		// now, the authorization is done, we can create realm instance by appID
 		node := chirp.GetOrCreateRealm(appID, credential)
 
+		// if can not connect to yomo zipper, close connection
+		if node == nil {
+			conn.Close()
+			return
+		}
+
 		// create peer instance after Websocket handshake
 		pconn := chirp.NewWebSocketConnection(conn)
 		peer := node.AddPeer(pconn, cuid)

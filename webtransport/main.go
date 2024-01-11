@@ -132,6 +132,10 @@ func handleConnection(sess quic.Connection) {
 	pconn := chirp.NewWebTransportConnection(sess)
 	// now, the authorization is done, we can create realm instance by appID
 	node := chirp.GetOrCreateRealm(appID, credential)
+	if node == nil {
+		closeReason = "can not connect to yomo zipper"
+		return
+	}
 
 	peer := node.AddPeer(pconn, userID)
 	log.Info("[%s-%s] Upgrade done!", peer.Sid, peer.Cid)
