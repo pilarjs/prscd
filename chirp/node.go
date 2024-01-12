@@ -124,6 +124,7 @@ func (n *node) ConnectToYoMo(credential string) error {
 		os.Getenv("YOMO_ZIPPER"),
 		yomo.WithCredential(credential),
 		yomo.WithTracerProvider(tp),
+		yomo.WithSourceReConnect(),
 	)
 
 	// rcvr is receiver to receive data from other prscd nodes by YoMo
@@ -132,6 +133,7 @@ func (n *node) ConnectToYoMo(credential string) error {
 		os.Getenv("YOMO_ZIPPER"),
 		yomo.WithSfnCredential(credential),
 		yomo.WithSfnTracerProvider(tp),
+		yomo.WithSfnReConnect(),
 	)
 
 	sndr.SetErrorHandler(func(err error) {
