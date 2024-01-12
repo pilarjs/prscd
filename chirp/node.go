@@ -37,7 +37,14 @@ func GetOrCreateRealm(appID string, credential string) (realm *node) {
 	if !ok {
 		log.Debug("create realm: %s", appID)
 		// connect to yomo zipper when created
-		res.(*node).ConnectToYoMo(credential)
+		err := res.(*node).ConnectToYoMo(credential)
+		// if can not connect to yomo zipper, remove this realm
+		if err != nil {
+			allRealms.Delete(appID)
+			// Consider return nil and close connection. But currently, I am trying to let client connected to this node, next time, it will try to connect to yomo zipper again, this will fix the network problem between prscd and yomo zipper.
+			// log.Error("connect to yomo zipper error: %+v", err)
+			// return nil
+		}
 	}
 
 	return res.(*node)
@@ -117,6 +124,7 @@ func (n *node) ConnectToYoMo(credential string) error {
 		os.Getenv("YOMO_ZIPPER"),
 		yomo.WithCredential(credential),
 		yomo.WithTracerProvider(tp),
+		yomo.WithSourceReConnect(),
 	)
 
 	// rcvr is receiver to receive data from other prscd nodes by YoMo
@@ -125,6 +133,7 @@ func (n *node) ConnectToYoMo(credential string) error {
 		os.Getenv("YOMO_ZIPPER"),
 		yomo.WithSfnCredential(credential),
 		yomo.WithSfnTracerProvider(tp),
+		yomo.WithSfnReConnect(),
 	)
 
 	sndr.SetErrorHandler(func(err error) {
