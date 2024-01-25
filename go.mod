@@ -9,7 +9,7 @@ require (
 	github.com/quic-go/quic-go v0.40.1
 	github.com/stretchr/testify v1.8.4
 	github.com/vmihailenco/msgpack/v5 v5.4.1
-	github.com/yomorun/yomo v1.17.2
+	github.com/yomorun/yomo v1.17.3
 	golang.org/x/sys v0.16.0
 )
 
