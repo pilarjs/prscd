@@ -113,7 +113,7 @@ func (p *Peer) HandleSignal(r io.Reader) error {
 
 	// p.Sid is the id of connection, set by backend.
 	sig.Sid = p.Sid
-	log.Debug("\t>RCV", "sid", p.Sid, "sig", sig)
+	log.Debug("[>RCV]", "sid", p.Sid, "sig", sig)
 
 	if sig.Type == psig.SigControl {
 		// handle the Control Signalling

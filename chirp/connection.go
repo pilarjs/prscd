@@ -64,7 +64,7 @@ func (c *WebTransportConnection) Write(msg []byte) error {
 	buf := []byte{0x00}
 	buf = append(buf, msg...)
 	if err := c.underlyingConn.SendDatagram(buf); err != nil {
-		log.Error("[%s] SendMessage error: %v", c.RemoteAddr(), err)
+		log.Error("SendMessage error", "remote", c.RemoteAddr(), "err", err)
 		return err
 	}
 	return nil

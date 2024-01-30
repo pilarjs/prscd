@@ -48,7 +48,7 @@ func ListenAndServe(addr string, config *tls.Config) {
 		// TCP has new connection
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Error("ln.accept error: %s", err)
+			log.Error("ln.accept error", "err", err)
 			conn.Close()
 			continue
 		}
