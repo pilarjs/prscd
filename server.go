@@ -25,7 +25,8 @@ func StartServer() {
 
 	// DEBUG env indicates development mode, verbose log
 	if os.Getenv("DEBUG") == "true" {
-		log.SetLogLevel(util.DEBUG)
+		// log.SetLogLevel(util.DEBUG)
+		log.SetLogLevel(-4)
 		log.Debug("IN DEVELOPMENT ENV")
 	}
 

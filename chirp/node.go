@@ -28,7 +28,7 @@ var AuthUserAndGetYoMoCredential func(publicKey string) (appID, credential strin
 
 // GetOrCreateRealm get or create realm by appID, if realm is created, it will connect to yomo zipper with credential.
 func GetOrCreateRealm(appID string, credential string) (realm *node) {
-	log.Debug("get or create realm: %s", appID)
+	log.Debug("get or create realm", "appID", appID)
 	res, ok := allRealms.LoadOrStore(appID, &node{
 		MeshID: os.Getenv("MESH_ID"),
 		id:     appID,
@@ -156,7 +156,7 @@ func (n *node) ConnectToYoMo(credential string) error {
 		if err != nil {
 			log.Error("Read from YoMo error", "err", err, "ctx.Data()", ctx.Data())
 		}
-		log.Debug("sig", sig)
+		log.Debug("got sig", "sig", sig)
 
 		if sig.AppID != n.id {
 			log.Debug("ignore message from other app", "appID", sig.AppID)
@@ -166,9 +166,9 @@ func (n *node) ConnectToYoMo(credential string) error {
 		channel := n.FindChannel(sig.Channel)
 		if channel != nil {
 			channel.Dispatch(sig)
-			log.Debug("[\u21CA]\t dispatched to %s", sig.Cid)
+			log.Debug("[\u21CA] dispatched to", "cid", sig.Cid)
 		} else {
-			log.Debug("[\u21CA]\t dispatch to channel failed cause of not exist: %s", sig.Channel)
+			log.Debug("[\u21CA] dispatch to channel failed cause of not exist", "channel", sig.Channel)
 		}
 	}
 
@@ -193,7 +193,7 @@ func (n *node) ConnectToYoMo(credential string) error {
 // BroadcastToYoMo broadcast presence to yomo
 func (n *node) BroadcastToYoMo(sig *psig.Signalling) {
 	// sig.Sid is sender's sid when sending message
-	log.Debug("\033[34m[%s][\u21C8\u21C8]\t %s\033[36m", sig.AppID, sig)
+	log.Debug("[\u21C8\u21C8]", "appID", sig.AppID, "sig", sig)
 	buf, err := msgpack.Marshal(sig)
 	if err != nil {
 		log.Error("msgpack marshal: %+v", err)

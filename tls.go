@@ -22,7 +22,7 @@ func loadTLS(certFile, keyFile string) (*tls.Config, error) {
 
 	// Get the expiration date
 	expirationDate := parsedCert.NotAfter
-	log.Debug("check TLS cert expiration date: %s", expirationDate)
+	log.Debug("check TLS cert expiration date", "date", expirationDate)
 
 	// determine if the certificate is expired
 	if time.Now().After(expirationDate) {

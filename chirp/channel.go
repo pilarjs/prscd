@@ -41,7 +41,7 @@ func (c *Channel) Broadcast(sig *psig.Signalling) {
 // Dispatch messages to all peers in this channel of current node.
 func (c *Channel) Dispatch(sig *psig.Signalling) {
 	// sig.Sid is sender's sid when sending message
-	log.Debug("[%s]\tSND>: %+v", sig.Sid, sig)
+	log.Debug("[SND>]", "sid", sig.Sid, "sig", sig)
 	var sender = sig.Sid
 	// do not broadcast APP_ID and Sid to end user
 	sig.AppID = ""
@@ -57,13 +57,13 @@ func (c *Channel) Dispatch(sig *psig.Signalling) {
 		sid := k.(string)
 		p := v.(*Peer)
 		if sid == sender {
-			util.Log.Debug("-----------ignore sender-self: %s", sender)
+			// util.Log.Debug("-----------ignore sender-self", "sender", sender)
 			return true
 		}
-		util.Log.Debug("[%s] BroadcastPresence to ch:%s, for sid:%s", sender, c.UniqID, p.Sid)
+		util.Log.Debug("BroadcastPresence to ch for sid", "sender", sender, "ch", c.UniqID, "sid", p.Sid)
 		err = p.conn.Write(resp)
 		if err != nil {
-			log.Error("ws.write error: %+v", err)
+			log.Error("ws.write error", "err", err)
 		}
 		return true
 	})

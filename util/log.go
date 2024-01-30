@@ -11,11 +11,11 @@ type logLevelType int
 
 const (
 	// DEBUG level
-	DEBUG logLevelType = iota
+	DEBUG logLevelType = -4
 	// INFO level
-	INFO
+	INFO logLevelType = 0
 	// ERROR level
-	ERROR
+	ERROR logLevelType = 8
 )
 
 type plog struct {
@@ -72,6 +72,11 @@ func (l *plog) Fatal(err error) {
 // SetLogLevel set log level.
 func (l *plog) SetLogLevel(lvl logLevelType) {
 	l.logLevel = lvl
+	if lvl == DEBUG {
+		l.outlog = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}))
+	}
 }
 
 // Log is a global logger
