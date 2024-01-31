@@ -161,7 +161,6 @@ func ListenAndServe(addr string, config *tls.Config) {
 
 		keepaliveDone := make(chan bool)
 		go func(c net.Conn) {
-			// 浏览器不会发送 Ping，一定是服务器端发 Ping，浏览器会自动回应 Pong（但在 DevTools 里是不显示Ping/Pong的）
 			// according to https://tools.ietf.org/html/rfc6455#section-5.5.2, Web Browsers will not send Ping frame,
 			// backend server should send Ping frame to keep connection alive, and Web Browsers will auto reply Pong frame when receive Ping frame. But in Chrome DevTools, Ping/Pong frame is not shown.
 			ticker := time.NewTicker(DurationOfPing)
