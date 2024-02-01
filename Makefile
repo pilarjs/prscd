@@ -30,7 +30,7 @@ dist: clean
 
 .PHONY: dev
 dev:
-	$(GO) run -race ./cmd/prscd
+	YOMO_LOG_LEVEL=warn $(GO) run -race ./cmd/prscd
 
 .PHONY: test
 test:
