@@ -35,7 +35,7 @@ func GetOrCreateRealm(appID string, credential string) (realm *node) {
 	})
 
 	if !ok {
-		log.Debug("create realm: %s", appID)
+		log.Debug("create realm", "appID", appID)
 		// connect to yomo zipper when created
 		err := res.(*node).ConnectToYoMo(credential)
 		// if can not connect to yomo zipper, remove this realm
@@ -109,7 +109,7 @@ func (n *node) FindChannel(name string) *Channel {
 // ConnectToYoMo connect this node to the geo-distributed network which built by yomo.
 func (n *node) ConnectToYoMo(credential string) error {
 	// YOMO_ZIPPER env indicates the endpoint of YoMo Zipper to connect
-	log.Debug("connect to YoMo Zipper", "realm", n.id, "yomo endpoint", os.Getenv("YOMO_ZIPPER"))
+	log.Debug("connect to YoMo Zipper", "realm", n.id, "endpoint", os.Getenv("YOMO_ZIPPER"))
 
 	// add open tracing
 	tp, shutdown, err := trace.NewTracerProvider("prscd")
