@@ -30,6 +30,11 @@ func (c *MockConnection) Write(msg []byte) error {
 	return nil
 }
 
+// RawWrite write the raw bytes to the connection, this is a low-level implementation
+func (c *MockConnection) RawWrite(byf []byte) (int, error) {
+	return 0, nil
+}
+
 // SenderMock implement yomo.Source interface
 type SenderMock struct{}
 

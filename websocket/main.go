@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -171,7 +172,8 @@ func ListenAndServe(addr string, config *tls.Config) {
 					log.Debug("ticker done", "sid", peer.Sid)
 					return
 				case <-ticker.C:
-					c.Write(generatePingFrame())
+					// c.Write(generatePingFrame())
+					pconn.RawWrite(generatePingFrame())
 				}
 			}
 		}(conn)
@@ -253,6 +255,7 @@ func generatePingFrame() []byte {
 	tsbuf := make([]byte, 8)
 	binary.BigEndian.PutUint64(tsbuf, uint64(ts))
 	pf := ws.MustCompileFrame(ws.NewPingFrame(tsbuf))
+	log.Debug("PING Payload", "len", len(pf), "bytes", fmt.Sprintf("% X", pf))
 	return pf
 }
 
@@ -268,7 +271,8 @@ func handlePongFrame(sid string, r io.Reader, header ws.Header) error {
 	// calculate the RTT and prints to stdout
 	appData := int64(binary.BigEndian.Uint64(buf))
 	now := time.Now().UnixMilli()
-	log.Inspect("\tPONG Payload", "sid", sid, "len", len(buf), "val", appData, "𝚫", now-appData)
+	// log.Inspect("\tPONG Payload", "sid", sid, "len", len(buf), "val", appData, "𝚫", now-appData)
+	log.Debug("[PONG]", "sid", sid, "len", len(buf), "buf", fmt.Sprintf("% X", buf), "val", appData, "𝚫", now-appData)
 	return nil
 }
 

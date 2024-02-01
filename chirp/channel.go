@@ -43,9 +43,10 @@ func (c *Channel) Dispatch(sig *psig.Signalling) {
 	// sig.Sid is sender's sid when sending message
 	log.Debug("[SND>]", "sid", sig.Sid, "sig", sig)
 	var sender = sig.Sid
-	// do not broadcast APP_ID and Sid to end user
+	// do not broadcast APP_ID, Sid and Mesh to end user
 	sig.AppID = ""
 	sig.Sid = ""
+	sig.MeshID = ""
 	resp, err := msgpack.Marshal(sig)
 	if err != nil {
 		log.Error("msgpack marshal: %+v", err)

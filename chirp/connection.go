@@ -2,6 +2,7 @@ package chirp
 
 import (
 	"net"
+	"sync"
 
 	"github.com/gobwas/ws/wsutil"
 	"github.com/quic-go/quic-go"
@@ -13,6 +14,8 @@ type Connection interface {
 	RemoteAddr() string
 	// Write the data to the connection
 	Write(msg []byte) error
+	// RawWrite write the raw bytes to the connection, this is a low-level implementation
+	RawWrite(buf []byte) (int, error)
 }
 
 /*** WebSocket ***/
@@ -26,6 +29,7 @@ func NewWebSocketConnection(conn net.Conn) Connection {
 
 // WebSocketConnection is a WebSocket connection
 type WebSocketConnection struct {
+	mu             sync.Mutex
 	underlyingConn net.Conn
 }
 
@@ -36,7 +40,16 @@ func (c *WebSocketConnection) RemoteAddr() string {
 
 // Write the data to the connection
 func (c *WebSocketConnection) Write(msg []byte) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	return wsutil.WriteServerBinary(c.underlyingConn, msg)
+}
+
+// RawWrite write the raw bytes to the connection, this is a low-level implementation
+func (c *WebSocketConnection) RawWrite(buf []byte) (int, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.underlyingConn.Write(buf)
 }
 
 /*** WebTransport ***/
@@ -50,6 +63,7 @@ func NewWebTransportConnection(conn quic.Connection) Connection {
 
 // WebTransportConnection is a WebTransport connection
 type WebTransportConnection struct {
+	mu             sync.Mutex
 	underlyingConn quic.Connection
 }
 
@@ -60,6 +74,9 @@ func (c *WebTransportConnection) RemoteAddr() string {
 
 // Write the data to the connection
 func (c *WebTransportConnection) Write(msg []byte) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	// add 0x00 to msg
 	buf := []byte{0x00}
 	buf = append(buf, msg...)
@@ -68,4 +85,16 @@ func (c *WebTransportConnection) Write(msg []byte) error {
 		return err
 	}
 	return nil
+}
+
+// RawWrite write the raw bytes to the connection, this is a low-level implementation
+func (c *WebTransportConnection) RawWrite(buf []byte) (int, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if err := c.underlyingConn.SendDatagram(buf); err != nil {
+		log.Error("SendMessage error", "remote", c.RemoteAddr(), "err", err)
+		return 0, err
+	}
+	return len(buf), nil
 }
