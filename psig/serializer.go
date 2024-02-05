@@ -17,7 +17,7 @@ func marshal(tag uint32, sig *Signalling) (uint32, []byte, error) {
 	return tag, buf, nil
 }
 
-// MarshalControlSig marshals the data signal with the given channel and payload.
+// MarshalDataSig marshals the data signal with the given channel and payload.
 func MarshalDataSig(channel string, payload interface{}, cid string) (uint32, []byte, error) {
 	payloadBuf, err := msgpack.Marshal(payload)
 	if err != nil {
