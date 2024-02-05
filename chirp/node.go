@@ -158,10 +158,10 @@ func (n *node) ConnectToYoMo(credential string) error {
 		}
 		log.Debug("got sig", "sig", sig)
 
-		if sig.AppID != n.id {
-			log.Debug("ignore message from other app", "appID", sig.AppID)
-			return
-		}
+		// if sig.AppID != n.id {
+		// 	log.Debug("ignore message from other app", "appID", sig.AppID)
+		// 	return
+		// }
 
 		channel := n.FindChannel(sig.Channel)
 		if channel != nil {

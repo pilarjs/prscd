@@ -42,7 +42,7 @@
       if (resp.pl) {
         resp.pl = MessagePack.decode(resp.pl)
       }
-      console.info("\t>RCV")
+      console.info("\t>RCV", resp)
 
       // handle logic
       handleSignalling(socket, resp)
@@ -114,7 +114,7 @@
 
       // Data plane
       if (sig.t == "data") {
-        console.log(" * DATA", sig.pl)
+        console.log(" * DATA", sig.pl, "from", sig.p)
       }
     }
 
