@@ -12,7 +12,7 @@ import (
 
 func TestContext(t *testing.T) {
 	t.Run("new context error", func(t *testing.T) {
-		yctx := mockYomoCtx{read: []byte("bytes that cannot be msgpack unmarshalled")}
+		yctx := mockYomoCtx{read: []byte("bytes that cannot be unmarshal by msgpack")}
 		_, err := NewContext(&yctx, "test")
 		assert.EqualError(t, err, "msgpack: unexpected code=62 decoding map length")
 	})
@@ -63,6 +63,9 @@ type mockYomoCtx struct {
 func (c *mockYomoCtx) Data() []byte          { return c.read }
 func (c *mockYomoCtx) HTTP() serverless.HTTP { return nil }
 func (c *mockYomoCtx) Tag() uint32           { return 0 }
+func (c *mockYomoCtx) WriteWithTarget(tag uint32, data []byte, target string) error {
+	return nil
+}
 
 func (c *mockYomoCtx) Write(tag uint32, data []byte) error {
 	fmt.Println(len(data))
