@@ -45,6 +45,6 @@ func TestMarshalDataSigWithoutChannel(t *testing.T) {
 
 	expectedTag, expectedBuf, err := MarshalDataSig(channel, payload, cid)
 	assert.EqualValues(t, 0, expectedTag)
-	assert.EqualValues(t, nil, expectedBuf)
+	assert.Nil(t, expectedBuf)
 	assert.EqualError(t, err, "channel is required")
 }
