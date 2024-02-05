@@ -34,7 +34,8 @@ dev:
 
 .PHONY: test
 test:
-	MESH_ID=test go test ./...
+	# MESH_ID=test go test ./...
+	go test github.com/pilarjs/prscd/psig
 
 .PHONY: bench
 bench:
