@@ -18,7 +18,7 @@ func marshal(tag uint32, sig *Signalling) (uint32, []byte, error) {
 }
 
 // MarshalDataSig marshals the data signal with the given channel and payload.
-func MarshalDataSig(channel string, payload interface{}, cid string) (uint32, []byte, error) {
+func MarshalDataSig(channel string, payload any, cid string) (uint32, []byte, error) {
 	payloadBuf, err := msgpack.Marshal(payload)
 	if err != nil {
 		slog.Error("MarshalDataSig", "err", err)
