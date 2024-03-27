@@ -9,3 +9,4 @@ bin/
 build/
 
 *.pid
+cover.out
