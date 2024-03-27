@@ -1,7 +1,6 @@
 package chirp
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"sync"
@@ -11,7 +10,6 @@ import (
 	"github.com/pilarjs/prscd/util"
 	"github.com/vmihailenco/msgpack/v5"
 	"github.com/yomorun/yomo"
-	"github.com/yomorun/yomo/pkg/trace"
 	"github.com/yomorun/yomo/serverless"
 )
 
@@ -110,20 +108,11 @@ func (n *node) FindChannel(name string) *Channel {
 func (n *node) ConnectToYoMo(credential string) error {
 	// YOMO_ZIPPER env indicates the endpoint of YoMo Zipper to connect
 	log.Debug("connect to YoMo Zipper", "realm", n.id, "endpoint", os.Getenv("YOMO_ZIPPER"))
-
-	// add open tracing
-	tp, shutdown, err := trace.NewTracerProvider("prscd")
-	if err == nil {
-		log.Info("🛰 tracing enabled")
-	}
-	defer shutdown(context.Background())
-
 	// sndr is sender to send data to other prscd nodes by YoMo
 	sndr := yomo.NewSource(
 		os.Getenv("YOMO_SNDR_NAME")+"-"+n.id,
 		os.Getenv("YOMO_ZIPPER"),
 		yomo.WithCredential(credential),
-		yomo.WithTracerProvider(tp),
 		yomo.WithSourceReConnect(),
 	)
 
@@ -132,7 +121,6 @@ func (n *node) ConnectToYoMo(credential string) error {
 		os.Getenv("YOMO_RCVR_NAME")+"-"+n.id,
 		os.Getenv("YOMO_ZIPPER"),
 		yomo.WithSfnCredential(credential),
-		yomo.WithSfnTracerProvider(tp),
 		yomo.WithSfnReConnect(),
 	)
 
@@ -145,7 +133,7 @@ func (n *node) ConnectToYoMo(credential string) error {
 	})
 
 	// connect yomo source to zipper
-	err = sndr.Connect()
+	err := sndr.Connect()
 	if err != nil {
 		return err
 	}

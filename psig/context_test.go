@@ -60,9 +60,12 @@ type mockYomoCtx struct {
 	written ChannelEvent
 }
 
-func (c *mockYomoCtx) Data() []byte          { return c.read }
-func (c *mockYomoCtx) HTTP() serverless.HTTP { return nil }
-func (c *mockYomoCtx) Tag() uint32           { return 0 }
+var _ serverless.Context = &mockYomoCtx{}
+
+func (c *mockYomoCtx) Data() []byte                   { return c.read }
+func (c *mockYomoCtx) HTTP() serverless.HTTP          { return nil }
+func (c *mockYomoCtx) Tag() uint32                    { return 0 }
+func (c *mockYomoCtx) Metadata(string) (string, bool) { return "", true }
 func (c *mockYomoCtx) WriteWithTarget(tag uint32, data []byte, target string) error {
 	return nil
 }
