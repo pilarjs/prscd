@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/pilarjs/prscd/util"
+	"github.com/yomorun/yomo"
 	"github.com/yomorun/yomo/core/frame"
 )
 
@@ -35,32 +36,19 @@ func (c *MockConnection) RawWrite(byf []byte) (int, error) {
 	return 0, nil
 }
 
-// SenderMock implement yomo.Source interface
-type SenderMock struct{}
+// MockSender implement yomo.Source interface
+type MockSender struct{}
 
-func (s *SenderMock) Close() error {
-	return nil
-}
+var _ yomo.Source = &MockSender{}
 
-func (s *SenderMock) Connect() error {
-	return nil
-}
-
-func (s *SenderMock) Write(tag frame.Tag, data []byte) error {
-	return nil
-}
-
-func (s *SenderMock) SetErrorHandler(fn func(err error)) {
-}
-
-func (s *SenderMock) SetReceiveHandler(fn func(tag frame.Tag, data []byte)) {
-}
-
-func (s *SenderMock) Broadcast(tag uint32, data []byte) error {
-	return nil
-}
-
-func (s *SenderMock) SetDataTag(tag frame.Tag) {}
+func (s *MockSender) Close() error                                                    { return nil }
+func (s *MockSender) Connect() error                                                  { return nil }
+func (s *MockSender) Write(tag frame.Tag, data []byte) error                          { return nil }
+func (s *MockSender) SetErrorHandler(fn func(err error))                              {}
+func (s *MockSender) SetReceiveHandler(fn func(tag frame.Tag, data []byte))           {}
+func (s *MockSender) Broadcast(tag uint32, data []byte) error                         { return nil }
+func (s *MockSender) SetDataTag(tag frame.Tag)                                        {}
+func (s *MockSender) WriteWithTarget(tag frame.Tag, data []byte, target string) error { return nil }
 
 var channelName, peerName string
 var appID = "test_appid"
@@ -68,7 +56,7 @@ var n = GetOrCreateRealm(appID, os.Getenv("YOMO_CREDENTIAL"))
 
 func init() {
 	// mock YoMo Source
-	n.sndr = &SenderMock{}
+	n.sndr = &MockSender{}
 
 	channelName = "test_channel"
 	peerName = "test_peer"
