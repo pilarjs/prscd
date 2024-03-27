@@ -50,10 +50,6 @@ func (s *MockSender) Broadcast(tag uint32, data []byte) error                   
 func (s *MockSender) SetDataTag(tag frame.Tag)                                        {}
 func (s *MockSender) WriteWithTarget(tag frame.Tag, data []byte, target string) error { return nil }
 
-func (s *SenderMock) WriteWithTarget(tag uint32, data []byte, target string) error {
-	return nil
-}
-
 var channelName, peerName string
 var appID = "test_appid"
 var n = GetOrCreateRealm(appID, os.Getenv("YOMO_CREDENTIAL"))
