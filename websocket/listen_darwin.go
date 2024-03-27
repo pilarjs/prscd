@@ -12,10 +12,10 @@ import (
 
 // reuse port on darwin
 var lc = net.ListenConfig{
-	Control: func(network, address string, c syscall.RawConn) error {
+	Control: func(_, _ string, c syscall.RawConn) error {
 		var opErr error
 		if err := c.Control(func(fd uintptr) {
-			// 端口复用，这样可以多进程监听该端口，充分利用 CPU 资源；同时也可以实现热更新
+			// reuse port, this can listen on the same port in multiple processes, make full use of CPU resources; and can also achieve hot update
 			opErr = unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_REUSEPORT, 1)
 		}); err != nil {
 			return err

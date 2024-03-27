@@ -1,3 +1,4 @@
+// Package prscd is the main entry of the prscd server.
 package prscd
 
 import (
@@ -17,6 +18,7 @@ import (
 
 var log = util.Log
 
+// StartServer starts the prscd server.
 func StartServer() {
 	// check MESH_ID env
 	if os.Getenv("MESH_ID") == "" {
