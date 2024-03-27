@@ -2,8 +2,6 @@ module github.com/pilarjs/prscd
 
 go 1.21.0
 
-toolchain go1.22.1
-
 require (
 	github.com/gobwas/ws v1.3.2
 	github.com/joho/godotenv v1.5.1
