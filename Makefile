@@ -35,7 +35,12 @@ dev:
 .PHONY: test
 test:
 	# MESH_ID=test go test ./...
-	go test github.com/pilarjs/prscd/psig
+	go test -race github.com/pilarjs/prscd/psig
+
+.PHONY: coverage
+coverage:
+	go test -race -coverprofile=cover.out github.com/pilarjs/prscd/psig
+ 
 
 .PHONY: bench
 bench:
