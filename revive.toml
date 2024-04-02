@@ -20,4 +20,4 @@ warningCode = 0
 [rule.modifies-parameter]
 [rule.duplicated-imports]
 [rule.unreachable-code]
-[rule.unexported-return]
+#[rule.unexported-return]
