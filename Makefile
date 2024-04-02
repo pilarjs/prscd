@@ -13,7 +13,8 @@ vet:
 
 .PHONY: lint
 lint:
-	revive -exclude chirp/*_test.go -exclude cmd/prscd/epoll.go -formatter friendly ./...
+	#revive -exclude chirp/*_test.go -exclude cmd/prscd/epoll.go -formatter friendly ./...
+	revive -formatter friendly -exclude TEST ./...
 
 .PHONY: build
 build:
