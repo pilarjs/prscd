@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vmihailenco/msgpack/v5"
 
+	"github.com/yomorun/yomo/ai"
 	"github.com/yomorun/yomo/serverless"
 )
 
@@ -63,7 +64,6 @@ type mockYomoCtx struct {
 var _ serverless.Context = &mockYomoCtx{}
 
 func (c *mockYomoCtx) Data() []byte                   { return c.read }
-func (c *mockYomoCtx) HTTP() serverless.HTTP          { return nil }
 func (c *mockYomoCtx) Tag() uint32                    { return 0 }
 func (c *mockYomoCtx) Metadata(string) (string, bool) { return "", true }
 func (c *mockYomoCtx) WriteWithTarget(tag uint32, data []byte, target string) error {
@@ -78,5 +78,17 @@ func (c *mockYomoCtx) Write(tag uint32, data []byte) error {
 	var ev ChannelEvent
 	_ = msgpack.Unmarshal(w.Payload, &ev)
 	c.written = ev
+	return nil
+}
+
+func (c *mockYomoCtx) LLMFunctionCall() (*ai.FunctionCall, error) {
+	return nil, nil
+}
+
+func (c *mockYomoCtx) ReadLLMArguments(any) error {
+	return nil
+}
+
+func (c *mockYomoCtx) WriteLLMResult(result string) error {
 	return nil
 }

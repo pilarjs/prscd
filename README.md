@@ -85,6 +85,17 @@ Compile:
 make dist
 ```
 
+## 🔍 Health Check & Monitoring
+
+Prscd provides built-in health check endpoints on the same port as WebSocket/WebTransport services (default: 443 or 8443):
+
+```bash
+# Test health check
+curl -k https://lo.yomo.dev:8443/health
+
+# Response: {"status":"healthy","service":"prscd"}
+```
+
 ## ☕️ FAQ
 
 ### how to generate SSL for your own domain

@@ -72,6 +72,20 @@ func ListenAndServe(addr string, config *tls.Config) {
 					)
 				}
 				log.Debug("ws upgrade", "path", url.Path, "query", url.Query())
+
+				// Health check endpoint for monitoring services (Datadog, etc.)
+				if url.Path == "/health" {
+					return ws.RejectConnectionError(
+						ws.RejectionStatus(200),
+						ws.RejectionHeader(ws.HandshakeHeaderString(
+							"Content-Type: application/json\r\n"+
+								"X-Prscd-Version: v2.1.1\r\n"+
+								"X-Prscd-MeshID: "+os.Getenv("MESH_ID")+"\r\n",
+						)),
+						ws.RejectionReason(`{"status":"healthy","service":"prscd"}`),
+					)
+				}
+
 				if url.Path != chirp.Endpoint {
 					return ws.RejectConnectionError(
 						ws.RejectionStatus(404),
