@@ -12,7 +12,6 @@ import (
 	"github.com/pilarjs/prscd/websocket"
 	"github.com/pilarjs/prscd/webtransport"
 	"github.com/yomorun/yomo"
-	"github.com/yomorun/yomo/core/router"
 	"github.com/yomorun/yomo/pkg/config"
 )
 
@@ -91,7 +90,10 @@ func startYomoZipper() {
 	log.Debug("integrated YoMo config:", "config file", conf)
 	log.Debug("integrated YoMo zipper:", "zipper endpoint", fmt.Sprintf("%s:%d", conf.Host, conf.Port))
 
-	zipper, err := yomo.NewZipper(conf.Name, router.Default(), nil, nil)
+	// Create mesh configuration map
+	meshConfig := make(map[string]config.Mesh)
+
+	zipper, err := yomo.NewZipper(conf.Name, meshConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
