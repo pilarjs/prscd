@@ -125,11 +125,11 @@ func (n *node) ConnectToYoMo(credential string) error {
 	)
 
 	sndr.SetErrorHandler(func(err error) {
-		log.Error("sndr error: %+v", err)
+		log.Error("setErrorHandler", "error", err)
 	})
 
 	rcvr.SetErrorHandler(func(err error) {
-		log.Error("rcvr error: %+v", err)
+		log.Error("setErrorHandler", "error", err)
 	})
 
 	// connect yomo source to zipper
