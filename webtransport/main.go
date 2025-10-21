@@ -50,11 +50,11 @@ func ListenAndServe(addr string, tlsConfig *tls.Config) {
 func handleConnection(sess quic.Connection) {
 	closeReason := "cc-88-cc"
 	defer func() {
-		log.Debug("++++++ closeReason: %s", closeReason)
+		log.Debug("handleConnection", "+closeReason", closeReason)
 		// sess.CloseWithError(quic.ApplicationErrorCode(0xb), closeReason)
 		sess.CloseWithError(quic.ApplicationErrorCode(0x10a), closeReason)
 	}()
-	log.Debug("handleConnection: %s", sess.RemoteAddr().String())
+	log.Debug("handleConnection", "remoteAddr", sess.RemoteAddr().String())
 	// https://www.ietf.org/archive/id/draft-ietf-webtrans-http3-02.html#section-2
 	// 2. Protocol Overview
 	// When an HTTP/3 connection is established, both the client and server have
@@ -81,12 +81,19 @@ func handleConnection(sess quic.Connection) {
 
 	// so,
 	// Step 1: Server send SETTINGS frame
-	go sendSettingsFrame(sess)
+	// Note: Must send settings frame synchronously before receiving client's settings
+	// to ensure proper HTTP/3 handshake order
+	err := sendSettingsFrame(sess)
+	if err != nil {
+		log.Error("webtrans|handleConnection", "sendSettingsFrame error", err)
+		closeReason = "error in send settings frame"
+		return
+	}
 
 	// Step 2: Server receive SETTINGS frame from client
-	err := receiveSettingsFrame(sess)
+	err = receiveSettingsFrame(sess)
 	if err != nil {
-		log.Error("webtrans|receiveSettingsFrame error: %s", err)
+		log.Error("webtrans|handleConnection", "receiveSettingsFrame error", err)
 		closeReason = "error in receive settings frame"
 		return
 	}
@@ -94,16 +101,16 @@ func handleConnection(sess quic.Connection) {
 	// Step 3: wait for reading client HTTP CONNECT (client indication)
 	stream, err := sess.AcceptStream(context.Background())
 	if err != nil {
-		log.Error("webtrans|acceptStream error: %s", err)
+		log.Error("webtrans|handleConnection", "acceptStream error", err)
 		closeReason = "error in accept stream"
 		return
 	}
-	log.Debug("\trequest stream accepted: %d", stream.StreamID())
+	log.Debug("webtrans|handleConnection", "request stream accepted", stream.StreamID())
 
 	var publicKey, userID string
 	status, err := receiveHTTPConnectHeaderFrame(stream, &publicKey, &userID)
 	if err != nil {
-		log.Error("webtrans|receiveHTTPConnectHeaderFrame error: %s", err)
+		log.Error("webtrans|handleConnection", "receiveHTTPConnectHeaderFrame error", err)
 		closeReason = err.Error()
 		return
 	}
@@ -116,7 +123,7 @@ func handleConnection(sess quic.Connection) {
 	// Step 4: response HEADER frame if client is valid
 	err = writeResponseHeaderFrame(stream, status)
 	if err != nil {
-		log.Error("webtrans|writeResponseHeaderFrame error: %s", err)
+		log.Error("webtrans|handleConnection", "writeResponseHeaderFrame error", err)
 		closeReason = "error in write response header frame"
 		return
 	}
@@ -126,7 +133,7 @@ func handleConnection(sess quic.Connection) {
 		return
 	}
 
-	log.Debug("Prepared! Start to work ... uid: %s", userID)
+	log.Debug("webtrans|handleConnection", "Prepared! Start to work ... uid: %s", userID)
 
 	// Step 5: start to processing chirp protocol
 	pconn := chirp.NewWebTransportConnection(sess)
@@ -138,7 +145,7 @@ func handleConnection(sess quic.Connection) {
 	}
 
 	peer := node.AddPeer(pconn, userID)
-	log.Info("[%s-%s] Upgrade done!", peer.Sid, peer.Cid)
+	log.Info("webtrans|handleConnection", "Upgrade done! peer.Sid=", peer.Sid, "peer.Cid=", peer.Cid)
 
 	// TODO: send `connected_ack` signalling to client
 
@@ -148,10 +155,10 @@ func handleConnection(sess quic.Connection) {
 			msg, err := sess.ReceiveDatagram(context.Background())
 			if err != nil {
 				// ignore errors here, we will handle client close event in stream loop
-				log.Error("-->[%s] stream.Read error: %s", pconn.RemoteAddr(), err)
+				log.Error("webtrans|handleConnection", "stream.Read error", err)
 				return
 			}
-			log.Debug("ReceiveMessage: %s", msg)
+			log.Debug("webtrans|handleConnection", "ReceiveMessage", msg)
 			// log.Debug("ReceiveMessage: %# x", msg)
 			// be careful, the first byte of msg is 0x00
 			reader := bytes.NewReader(msg[1:])
@@ -165,7 +172,7 @@ func handleConnection(sess quic.Connection) {
 		if err != nil {
 			// if client close the connection, error will occurs here
 			// for example: err:timeout: no recent network activity
-			log.Error("[%s] stream.Read error: %s", pconn.RemoteAddr(), err)
+			log.Error("webtrans|handleConnection", "stream.Read error", err)
 			peer.Disconnect()
 			stream.Close()
 			sess.CloseWithError(0, "client disconnected")
@@ -223,7 +230,7 @@ func receiveHTTPConnectHeaderFrame(reqStream quic.Stream, publicKey, userID *str
 
 	var authority, path, scheme, protocol, origin, method, version string
 	for key, val := range headers {
-		log.Debug("\t[header] %d: %s", key, val)
+		log.Debug("webtrans|receiveHTTPConnectHeaderFrame", "[header] key=", key, "val=", val)
 		if val.Name == ":authority" { // like prscd.yomo.dev:443
 			authority = val.Value
 		} else if val.Name == ":path" { // `/v1/webtrans?publickey=123&id=yomo-1`
@@ -258,20 +265,20 @@ func receiveHTTPConnectHeaderFrame(reqStream quic.Stream, publicKey, userID *str
 	}
 
 	// if origin need to be validated, do it here
-	log.Debug("origin: %s", origin)
+	log.Debug("webtrans|receiveHTTPConnectHeaderFrame", "origin", origin)
 
 	// by checking authority, I'd like tell out the environment of service, like dev, test and prod, because I have different domains for them
-	log.Debug("authority: %s", authority)
+	log.Debug("webtrans|receiveHTTPConnectHeaderFrame", "authority", authority)
 
 	// validate service version and auth
 	reqPath, err := url.Parse(path)
 	if err != nil {
 		return 401, errors.New("path is invalid: " + err.Error())
 	}
-	log.Debug("request Path: %s, QueryString: %+v", reqPath.Path, reqPath.Query())
+	log.Debug("webtrans|receiveHTTPConnectHeaderFrame", "request Path", reqPath.Path, "QueryString", reqPath.Query())
 
 	if reqPath.Path != chirp.Endpoint {
-		return 404, errors.New("path has to be /v1/webtrans")
+		return 404, errors.New("path has to be /v1")
 	}
 
 	*userID = reqPath.Query().Get("id")
