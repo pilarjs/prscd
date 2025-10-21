@@ -14,7 +14,7 @@ import (
 	"github.com/quic-go/quic-go/quicvarint"
 )
 
-func sendSettingsFrame(sess quic.Connection) {
+func sendSettingsFrame(sess quic.Connection) error {
 	// server should send HTTP SETTINGS frame to client
 	log.Debug("[1] Send SETTINGS frame")
 	// https://www.ietf.org/archive/id/draft-ietf-webtrans-http3-02.html#section-3.1
@@ -22,11 +22,11 @@ func sendSettingsFrame(sess quic.Connection) {
 	// [1] send SETTINGS frame
 	// https://www.w3.org/TR/webtransport/#webtransport-constructor
 	// 6. Wait for connection to receive the first SETTINGS frame, and let settings be a dictionary that represents the SETTINGS frame.
-	// 7. If settings doesn’t contain SETTINGS_ENABLE_WEBTRANPORT with a value of 1, or it doesn’t contain H3_DATAGRAM with a value of 1, then abort the remaining steps and queue a network task with transport to run these steps:
+	// 7. If settings doesn't contain SETTINGS_ENABLE_WEBTRANPORT with a value of 1, or it doesn't contain H3_DATAGRAM with a value of 1, then abort the remaining steps and queue a network task with transport to run these steps:
 	respStream, err := sess.OpenUniStream()
 	if err != nil {
 		log.Error("sess.OpenUniStream error: %v", err)
-		return
+		return err
 	}
 
 	// https://datatracker.ietf.org/doc/draft-ietf-masque-h3-datagram/
@@ -101,8 +101,10 @@ func sendSettingsFrame(sess quic.Connection) {
 	_, err = respStream.Write(buf)
 	if err != nil {
 		log.Error("sendSettingsFrame error: %v", err)
+		return err
 	}
 	log.Debug("\tSettings frame sent")
+	return nil
 }
 
 func receiveSettingsFrame(sess quic.Connection) error {
